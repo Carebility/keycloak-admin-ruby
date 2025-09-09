@@ -87,6 +87,10 @@ module KeycloakAdmin
       UserClient.new(@configuration, self)
     end
 
+    def organizations
+      OrganizationClient.new(@configuration, self)
+    end
+
     def attack_detections
       AttackDetectionClient.new(@configuration, self)
     end
