@@ -133,7 +133,14 @@ module KeycloakAdmin
         lifespan_param = lifespan.nil? ? "" : "&lifespan=#{lifespan.seconds}"
         redirect_uri_param = redirect_uri.nil? ? "" : "&redirect_uri=#{redirect_uri}"
         client_id_param = client_id.nil? ? "" : "client_id=#{client_id}"
-        RestClient.put("#{execute_actions_email_url(user_id)}?#{client_id_param}#{redirect_uri_param}#{lifespan_param}", create_payload(actions), headers)
+        RestClient::Request.execute(
+          @configuration.rest_client_options.merge(
+            method: :put,
+            url: "#{execute_actions_email_url(user_id)}?#{client_id_param}#{redirect_uri_param}#{lifespan_param}",
+            payload: create_payload(actions),
+            headers: headers
+          )
+        )
       end
       user_id
     end
