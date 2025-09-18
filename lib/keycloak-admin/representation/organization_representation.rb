@@ -11,17 +11,17 @@ module KeycloakAdmin
       :members,
       :identity_providers
 
-    def self.from_hash(hash)
+    def self.from_hash(organization_hash)
       organization              = new
-      organization.id           = hash["id"]
-      organization.name         = hash["name"]
-      organization.alias        = hash["alias"]
-      organization.enabled      = hash["enabled"]
-      organization.description  = hash["description"]
-      organization.redirect_url = hash["redirectUrl"]
-      organization.attributes   = hash["attributes"]
-      organization.domains      = hash["domains"]&.map { |hash| OrganizationDomainRepresentation.from_hash(hash) } || []
-      organization.identity_providers = hash["identityProviders"]&.map { |hash| IdentityProviderRepresentation.from_hash(hash) } || []
+      organization.id           = organization_hash["id"]
+      organization.name         = organization_hash["name"]
+      organization.alias        = organization_hash["alias"]
+      organization.enabled      = organization_hash["enabled"]
+      organization.description  = organization_hash["description"]
+      organization.redirect_url = organization_hash["redirectUrl"]
+      organization.attributes   = organization_hash["attributes"]
+      organization.domains      = organization_hash["domains"]&.map { |hash| OrganizationDomainRepresentation.from_hash(hash) } || []
+      organization.identity_providers = organization_hash["identityProviders"]&.map { |hash| IdentityProviderRepresentation.from_hash(hash) } || []
       organization
     end
 
