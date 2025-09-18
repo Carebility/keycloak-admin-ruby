@@ -11,6 +11,7 @@ module KeycloakAdmin
         organization_representation = OrganizationRepresentation.from_hash(organization_representation)
       end
       save(organization_representation)
+      search(organization_representation.name)&.last
     end
 
     def save(organization_representation)
@@ -19,7 +20,6 @@ module KeycloakAdmin
           create_payload(organization_representation), headers
         )
       end
-      organization_representation
     end
 
     # pay attention that, since Keycloak 24.0.4, partial updates of attributes are not authorized anymore
