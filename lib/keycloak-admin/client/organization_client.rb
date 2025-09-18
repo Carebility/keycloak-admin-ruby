@@ -6,8 +6,11 @@ module KeycloakAdmin
       @realm_client = realm_client
     end
 
-    def create!(organization_hash)
-      save(build(organization_hash))
+    def create!(organization_representation)
+      if organization_representation.class != OrganizationRepresentation
+        organization_representation = OrganizationRepresentation.from_hash(organization_representation)
+      end
+      save(organization_representation)
     end
 
     def save(organization_representation)
@@ -101,22 +104,6 @@ module KeycloakAdmin
       else
         "#{organizations_url(organization_id)}/members"
       end
-    end
-
-    private
-
-    def build(organization_hash)
-      organization              = OrganizationRepresentation.new
-      organization.id           = organization_hash["id"]
-      organization.name         = organization_hash["name"]
-      organization.alias        = organization_hash["alias"]
-      organization.enabled      = organization_hash["enabled"]
-      organization.description  = organization_hash["description"]
-      organization.redirect_url = organization_hash["redirectUrl"]
-      organization.attributes   = organization_hash["attributes"]
-      organization.domains      = organization_hash["domains"]&.map { |hash| OrganizationDomainRepresentation.from_hash(hash) } || []
-      organization.identity_providers = organization_hash["identityProviders"]&.map { |hash| IdentityProviderRepresentation.from_hash(hash) } || []
-      organization
     end
   end
 end
