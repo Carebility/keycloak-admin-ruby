@@ -11,6 +11,7 @@ module KeycloakAdmin
         organization_representation = OrganizationRepresentation.from_hash(organization_representation)
       end
       save(organization_representation)
+      search(organization_representation.name)&.last
     end
 
     def save(organization_representation)
