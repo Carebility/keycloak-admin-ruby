@@ -97,6 +97,13 @@ module KeycloakAdmin
       UserRepresentation.from_hash(JSON.parse(response))
     end
 
+    def get_member_organizations(user_id)
+      response = execute_http do
+        RestClient::Resource.new(member_organizations_url(user_id), @configuration.rest_client_options).get(headers)
+      end
+      JSON.parse(response).map { |organization_as_hash| OrganizationRepresentation.from_hash(organization_as_hash) }
+    end
+
     def organizations_url(organization_id=nil)
       if organization_id
         "#{@realm_client.realm_admin_url}/organizations/#{organization_id}"
@@ -111,6 +118,10 @@ module KeycloakAdmin
       else
         "#{organizations_url(organization_id)}/members"
       end
+    end
+
+    def member_organizations_url(user_id)
+      "#{organizations_url}/members/#{user_id}/organizations"
     end
   end
 end
