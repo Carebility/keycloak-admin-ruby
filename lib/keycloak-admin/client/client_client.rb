@@ -37,9 +37,11 @@ module KeycloakAdmin
     end
 
     def list
+      puts "listing clients in realm #{@realm_client.realm_name}"
       response = execute_http do
         RestClient::Resource.new(clients_url, @configuration.rest_client_options).get(headers)
       end
+      puts response
       JSON.parse(response).map { |client_as_hash| ClientRepresentation.from_hash(client_as_hash) }
     end
 
