@@ -37,7 +37,7 @@ module KeycloakAdmin
     end
 
     def list
-      puts "listing clients in realm #{@realm_client.realm_name}"
+      puts "listing clients..."
       response = execute_http do
         RestClient::Resource.new(clients_url, @configuration.rest_client_options).get(headers)
       end
