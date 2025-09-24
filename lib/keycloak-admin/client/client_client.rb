@@ -13,6 +13,13 @@ module KeycloakAdmin
       ClientRepresentation.from_hash(JSON.parse(response))
     end
 
+    def get_client_secret(id)
+      response = execute_http do
+        RestClient::Resource.new(client_secret_url(id), @configuration.rest_client_options).get(headers)
+      end
+      CredentialRepresentation.from_hash(JSON.parse(response))
+    end
+
     def create!(client_representation)
       if client_representation.class != ClientRepresentation
         client_representation = ClientRepresentation.from_hash(client_representation)
@@ -70,6 +77,10 @@ module KeycloakAdmin
       else
         "#{@realm_client.realm_admin_url}/clients"
       end
+    end
+
+    def client_secret_url(id)
+      "#{clients_url(id)}/client-secret"
     end
 
     def service_account_user_url(client_id)
