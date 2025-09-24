@@ -13,6 +13,14 @@ module KeycloakAdmin
       ClientRepresentation.from_hash(JSON.parse(response))
     end
 
+    def create!(client_representation)
+      if client_representation.class != ClientRepresentation
+        client_representation = ClientRepresentation.from_hash(client_representation)
+      end
+      save(client_representation)
+      find_by_client_id(client_representation.client_id)
+    end
+
     def save(client_representation)
       execute_http do
         RestClient::Resource.new(clients_url, @configuration.rest_client_options).post(
