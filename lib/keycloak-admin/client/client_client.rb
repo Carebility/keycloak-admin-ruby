@@ -40,13 +40,10 @@ module KeycloakAdmin
       response = execute_http do
         RestClient::Resource.new(clients_url, @configuration.rest_client_options).get(headers)
       end
-      puts "[KeycloakAdmin] client list response: #{response.inspect}"
       JSON.parse(response).map { |client_as_hash| ClientRepresentation.from_hash(client_as_hash) }
     end
 
     def find_by_client_id(client_id)
-      puts "[KeycloakAdmin] client_id: #{client_id}"
-      puts "[KeycloakAdmin] list from_hash: #{list.inspect}"
       list.find { |client| client.client_id == client_id }
     end
 
