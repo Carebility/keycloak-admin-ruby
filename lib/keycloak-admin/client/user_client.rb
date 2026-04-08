@@ -54,10 +54,48 @@ module KeycloakAdmin
       )
     end
 
-    def add_client_roles_on_user(user_id, client_id, role_representations)
+    def get_client_roles_on_user(user_id, client_id)
+      response = execute_http do
+        RestClient::Resource.new(user_client_role_mappings_url(user_id, client_id), @configuration.rest_client_options).get(headers)
+      end
+      JSON.parse(response).map { |role_as_hash| RoleRepresentation.from_hash(role_as_hash) }
+    end
+
+    def get_realm_roles_on_user(user_id)
+      response = execute_http do
+        RestClient::Resource.new(user_realm_role_mappings_url(user_id), @configuration.rest_client_options).get(headers)
+      end
+      JSON.parse(response).map { |role_as_hash| RoleRepresentation.from_hash(role_as_hash) }
+    end
+
+    def add_client_role_on_user(user_id, client_id, role_representation)
       execute_http do
         RestClient::Resource.new(user_client_role_mappings_url(user_id, client_id), @configuration.rest_client_options).post(
-          create_payload(role_representations), headers
+          create_payload(role_representation), headers
+        )
+      end
+    end
+
+    def add_realm_role_on_user(user_id, role_representation)
+      execute_http do
+        RestClient::Resource.new(user_realm_role_mappings_url(user_id), @configuration.rest_client_options).post(
+          create_payload(role_representation), headers
+        )
+      end
+    end
+
+    def remove_client_role_on_user(user_id, client_id, role_representation)
+      execute_http do
+        RestClient::Resource.new(user_client_role_mappings_url(user_id, client_id), @configuration.rest_client_options).delete(
+          create_payload(role_representation), headers
+        )
+      end
+    end
+
+    def remove_realm_role_on_user(user_id, role_representation)
+      execute_http do
+        RestClient::Resource.new(user_realm_role_mappings_url(user_id), @configuration.rest_client_options).delete(
+          create_payload(role_representation), headers
         )
       end
     end
@@ -222,6 +260,10 @@ module KeycloakAdmin
 
     def user_client_role_mappings_url(user_id, client_id)
       "#{users_url(user_id)}/role-mappings/clients/#{client_id}"
+    end
+
+    def user_realm_role_mappings_url(user_id)
+      "#{users_url(user_id)}/role-mappings/realm"
     end
 
     def reset_password_url(user_id)
