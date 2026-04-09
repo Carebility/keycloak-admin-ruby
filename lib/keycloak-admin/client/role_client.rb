@@ -20,7 +20,7 @@ module KeycloakAdmin
       response = execute_http do
         RestClient::Resource.new(role_name_url(name), @configuration.rest_client_options).get(headers)
       end
-      RoleRepresentation.from_hash JSON.parse(response)
+      RoleRepresentation.from_hash(JSON.parse(response))
     end
 
     # Lists all groups that have the specified role name assigned
