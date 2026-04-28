@@ -41,6 +41,10 @@ module KeycloakAdmin
       ClientScopeRepresentation.from_hash(JSON.parse(response))
     end
 
+    def find_by_name(name)
+      list.find { |client_scope| client_scope.name == name }
+    end
+
     def update(client_scope_id, client_scope_representation_body)
       raise ArgumentError.new("client_scope_id must be defined") if client_scope_id.nil?
 
