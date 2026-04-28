@@ -67,6 +67,10 @@ module KeycloakAdmin
       ClientClient.new(@configuration, self)
     end
 
+    def client_scopes
+      ClientScopeClient.new(@configuration, self)
+    end
+
     def groups
       GroupClient.new(@configuration, self)
     end
