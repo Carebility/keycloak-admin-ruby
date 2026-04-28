@@ -45,16 +45,14 @@ module KeycloakAdmin
       list.find { |client_scope| client_scope.name == name }
     end
 
-    def update(client_scope_id, client_scope_representation_body)
-      raise ArgumentError.new("client_scope_id must be defined") if client_scope_id.nil?
-
+    def update(client_scope_representation)
       execute_http do
-        RestClient::Resource.new(client_scopes_url(client_scope_id), @configuration.rest_client_options).put(
-          create_payload(client_scope_representation_body), headers
+        RestClient::Resource.new(client_scopes_url(client_scope_representation.id), @configuration.rest_client_options).put(
+          create_payload(client_scope_representation), headers
         )
       end
 
-      get(client_scope_id)
+      get(client_scope_representation.id)
     end
 
     def delete(client_scope_id)
