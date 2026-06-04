@@ -6,7 +6,7 @@
 
 FROM ghcr.io/carebility/carebility-devcontainer:latest as base
 
-ENV DEVCONTAINER_APP=carebility-infrastructure
+ENV DEVCONTAINER_APP=keycloak-admin-ruby
 ##################################################################################
 #                                 Build Image
 ##################################################################################
