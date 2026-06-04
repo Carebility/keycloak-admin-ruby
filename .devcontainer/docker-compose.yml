@@ -1,0 +1,43 @@
+services:
+  keycloak-admin-ruby:
+    platform: ${DOCKER_DEFAULT_PLATFORM}
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    build:
+      context: ..
+      dockerfile: .devcontainer/Dockerfile
+      platforms:
+        - ${DOCKER_DEFAULT_PLATFORM}
+      args:
+        HOST_UID: ${HOST_UID:-1000}
+        HOST_GID: ${HOST_GID:-1000}
+        GIT_DELTA_VERSION: 0.18.2
+        ZSH_IN_DOCKER_VERSION: 1.2.0
+    container_name: keycloak-admin-ruby
+    env_file:
+      - path: ../.env
+        required: false
+      - path: .env
+        required: false
+    environment:
+      - GIT_USER_NAME=${GIT_USER_NAME:-}
+      - GIT_USER_EMAIL=${GIT_USER_EMAIL:-}
+    volumes:
+      - ..:/workspace:cached
+      - ../certs:/workspace/certs
+    working_dir: /workspace
+    init: true
+    labels:
+      carebility.project: keycloak-admin-ruby
+    stdin_open: true
+    tty: true
+    command: sleep infinity
+    networks:
+      - carebility
+
+networks:
+  carebility:
+    name: carebility
+    driver: bridge
+    external: true

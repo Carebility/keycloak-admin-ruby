@@ -8,3 +8,20 @@ test/dummy/tmp/
 *.gem
 .idea/
 .byebug_history
+.env
+.env.*
+tmp/
+
+# Claude Local Settings
+settings.local.json
+CLAUDE.local.md
+
+.vscode/*
+!.vscode/launch.json
+!.vscode/tasks.jsonvscode
+.history/
+
+.worktrees/
+.agent-presentations/
+
+certs/
