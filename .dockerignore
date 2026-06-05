@@ -1,0 +1,38 @@
+# Build-context exclusions for the devcontainer image build.
+# The thin Dockerfile copies nothing, but a tight context keeps the
+# context upload to BuildKit trivial and avoids shipping secrets/junk.
+
+# VCS
+.git
+.github
+
+# Ruby / Bundler
+.bundle
+vendor
+vendor/bundle
+pkg
+*.gem
+
+# Logs & temp
+log
+tmp
+*.log
+
+# Agent / coordinator scaffolding
+.worktrees
+.agents
+.claude
+.agent-presentations
+
+# Editor / local
+.idea
+.vscode
+.history
+.byebug_history
+
+# Secrets / local env (never ship these in a build context)
+.env
+.env.*
+certs
+settings.local.json
+CLAUDE.local.md
