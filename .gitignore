@@ -11,6 +11,7 @@ test/dummy/tmp/
 .env
 .env.*
 tmp/
+vendor/
 
 # Claude Local Settings
 settings.local.json
