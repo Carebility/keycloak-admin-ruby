@@ -13,6 +13,16 @@ module KeycloakAdmin
       JSON.parse(response).map { |role_as_hash| RoleRepresentation.from_hash(role_as_hash) }
     end
 
+    # Creates a client role under the given client.
+    # POST /admin/realms/{realm}/clients/{id}/roles
+    def create(client_id, role_representation)
+      execute_http do
+        RestClient::Resource.new(clients_url(client_id), @configuration.rest_client_options).post(
+          create_payload(role_representation), headers
+        )
+      end
+    end
+
     def clients_url(id)
       "#{@realm_client.realm_admin_url}/clients/#{id}/roles"
     end
