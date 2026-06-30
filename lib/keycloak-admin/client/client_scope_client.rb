@@ -46,6 +46,8 @@ module KeycloakAdmin
     end
 
     def update(client_scope_representation)
+      raise ArgumentError.new("client_scope_representation must be defined") if client_scope_representation.nil?
+
       execute_http do
         RestClient::Resource.new(client_scopes_url(client_scope_representation.id), @configuration.rest_client_options).put(
           create_payload(client_scope_representation), headers

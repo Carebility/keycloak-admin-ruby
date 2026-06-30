@@ -117,12 +117,15 @@ RSpec.describe KeycloakAdmin::ClientScopeClient do
     end
 
     it "updates and returns the client scope" do
-      response = @client_scope_client.update(client_scope_id, {description: "Updated scope"})
+      representation = KeycloakAdmin::ClientScopeRepresentation.from_hash(
+        "id" => client_scope_id, "description" => "Updated scope"
+      )
+      response = @client_scope_client.update(representation)
       expect(response.description).to eq "Updated scope"
     end
 
-    it "raises argument error when client_scope_id is nil" do
-      expect { @client_scope_client.update(nil, {}) }.to raise_error(ArgumentError)
+    it "raises argument error when the representation is nil" do
+      expect { @client_scope_client.update(nil) }.to raise_error(ArgumentError)
     end
   end
 

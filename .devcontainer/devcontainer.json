@@ -1,0 +1,91 @@
+{
+  "name": "Keycloak Admin Ruby Dev",
+  "dockerComposeFile": ["docker-compose.yml"],
+  "features": {
+    "ghcr.io/devcontainers/features/git:1": {},
+    "ghcr.io/devcontainers/features/github-cli:1": {}
+  },
+  "service": "keycloak-admin-ruby",
+  "workspaceFolder": "/workspace",
+  "remoteUser": "carebility",
+  "containerUser": "carebility",
+  "updateRemoteUserUID": false,
+  "initializeCommand": ".devcontainer/setup-network.sh && .devcontainer/setup-environment.sh",
+  "postCreateCommand": "bash /devcontainer/post-create.sh",
+  "postStartCommand": "bash /devcontainer/post-start.sh",
+  "overrideCommand": false,
+  "shutdownAction": "stopCompose",
+  "waitFor": "postStartCommand",
+  "containerEnv": {
+    "TZ": "UTC",
+    "NODE_OPTIONS": "--max-old-space-size=4096",
+    "POWERLEVEL9K_DISABLE_GITSTATUS": "true"
+  },
+  "remoteEnv": {
+    "KEYCLOAK_URL": "${localEnv:KEYCLOAK_URL:https://auth.demo.carebility.dev}",
+    "KEYCLOAK_REALM": "${localEnv:KEYCLOAK_REALM:carebility}",
+    "KEYCLOAK_CLIENT_ID": "${localEnv:KEYCLOAK_CLIENT_ID:coworker-app-client}",
+    "VITE_MOCK_MODE": "true",
+    "VITE_DEV_ACCESS_TOKEN": "${localEnv:VITE_DEV_ACCESS_TOKEN}"
+  },
+  "mounts": [
+    "source=cursor-agent-bashhistory-${localWorkspaceFolderBasename},target=/commandhistory,type=volume",
+    "source=cursor-agent-config-${localWorkspaceFolderBasename},target=/home/carebility/.claude,type=volume",
+    "source=cursor-agent-state-${localWorkspaceFolderBasename},target=/home/carebility/.cursor,type=volume",
+    "source=${localEnv:HOME}/.config/gcloud,target=/home/carebility/.config/gcloud,type=bind,consistency=cached"
+  ],
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "anysphere.cursorpyright",
+        "anysphere.cursor-agent",
+        "bierner.markdown-mermaid",
+        "bradlc.vscode-tailwindcss",
+        "charliermarsh.ruff",
+        "dbaeumer.vscode-eslint",
+        "eamodio.gitlens",
+        "elixir-lsp.elixir-ls",
+        "esbenp.prettier-vscode",
+        "me-dutour-mathieu.vscode-github-actions",
+        "mgesbert.python-path",
+        "mikestead.dotenv",
+        "ms-azuretools.vscode-docker",
+        "ms-python.autopep8",
+        "ms-python.debugpy",
+        "ms-python.flake8",
+        "ms-python.pylint",
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "ms-python.vscode-python-envs",
+        "ms-vscode.live-server",
+        "njpwerner.autodocstring",
+        "redhat.vscode-yaml",
+        "wunderlabs.cursouls",
+        "usernamehw.errorlens"
+      ],
+      "settings": {
+        "python.analysis.typeCheckingMode": "basic",
+        "python.testing.pytestEnabled": true,
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.tabSize": 2,
+        "editor.codeActionsOnSave": {
+          "source.fixAll.eslint": "explicit"
+        },
+        "terminal.integrated.defaultProfile.linux": "zsh",
+        "terminal.integrated.profiles.linux": {
+          "bash": {
+            "path": "bash",
+            "icon": "terminal-bash"
+          },
+          "zsh": {
+            "path": "zsh"
+          }
+        },
+        "files.insertFinalNewline": true,
+        "files.trimTrailingWhitespace": true,
+        "terminal.integrated.shell.linux": "/bin/zsh"
+      }
+    }
+  }
+}
