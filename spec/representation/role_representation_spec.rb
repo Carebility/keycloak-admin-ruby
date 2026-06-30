@@ -12,12 +12,16 @@ RSpec.describe KeycloakAdmin::RoleRepresentation do
     end
 
     it "can convert to json with camelCased keys" do
-      expect(JSON.parse(@mapper.to_json)).to include(
+      expect(JSON.parse(@mapper.to_json)).to eq(
         "id" => "bb79fb10-a7b4-4728-a662-82a4de7844a3",
         "name" => "abcd",
+        "description" => nil,
+        "scopeParamRequired" => nil,
         "composite" => true,
+        "composites" => nil,
         "clientRole" => false,
-        "containerId" => nil
+        "containerId" => nil,
+        "attributes" => nil
       )
     end
   end
@@ -37,12 +41,20 @@ RSpec.describe KeycloakAdmin::RoleRepresentation do
     end
 
     it "can convert an array to json with camelCased keys" do
-      expect(JSON.parse(@mappers.to_json).first).to include(
-        "id" => "bb79fb10-a7b4-4728-a662-82a4de7844a3",
-        "name" => "abcd",
-        "composite" => true,
-        "clientRole" => false,
-        "containerId" => nil
+      expect(JSON.parse(@mappers.to_json)).to eq(
+        [
+          {
+            "id" => "bb79fb10-a7b4-4728-a662-82a4de7844a3",
+            "name" => "abcd",
+            "description" => nil,
+            "scopeParamRequired" => nil,
+            "composite" => true,
+            "composites" => nil,
+            "clientRole" => false,
+            "containerId" => nil,
+            "attributes" => nil
+          }
+        ]
       )
     end
   end

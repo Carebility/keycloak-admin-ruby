@@ -17,33 +17,19 @@ class Representation
                         else
                           value
                         end
-      [ivar.to_s[1..-1], processed_value]
+      # Only the representation's own attribute names are camelized. The keys of
+      # free-form maps (e.g. `config`, `attributes`) are Keycloak-defined and must
+      # be sent verbatim, so they are left untouched above by `transform_values`.
+      [camelize(ivar.to_s[1..-1], false), processed_value]
     end]
   end
 
   def to_json(options=nil)
-    snaked_hash = as_json(options)
-    deep_camelize_keys(snaked_hash).to_json(options)
+    as_json(options).to_json(options)
   end
 
   def self.from_json(json)
     hash = JSON.parse(json)
     from_hash(hash)
-  end
-
-  private
-
-  def deep_camelize_keys(value)
-    case value
-    when Hash
-      value.each_with_object({}) do |(key, val), result|
-        camelized_key = key.is_a?(String) ? camelize(key, false) : key
-        result[camelized_key] = deep_camelize_keys(val)
-      end
-    when Array
-      value.map { |item| deep_camelize_keys(item) }
-    else
-      value
-    end
   end
 end
