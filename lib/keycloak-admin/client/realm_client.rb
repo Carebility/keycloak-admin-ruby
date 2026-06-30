@@ -103,6 +103,10 @@ module KeycloakAdmin
       IdentityProviderClient.new(@configuration, self)
     end
 
+    def authentication
+      AuthenticationFlowClient.new(@configuration, self)
+    end
+
     def user(user_id)
       UserResource.new(@configuration, self, user_id)
     end
