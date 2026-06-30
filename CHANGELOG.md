@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2026-06-02
+
+* Add `IdentityProviderClient#update`, `#delete`, `#list_mappers`, `#update_mapping`
+* Add `AuthenticationFlowClient` with support for authentication flows and executions (`list_flows`, `find_flow_by_alias`, `copy_flow`, `list_executions`, `update_execution`, `add_execution`, `create_execution_config`, `delete_execution`)
+* Add `AuthenticationFlowRepresentation`, `AuthenticationExecutionInfoRepresentation`, `AuthenticatorConfigRepresentation`
+* Add `ClientRoleClient#create` to create a client role
+* Register `RealmClient#authentication` accessor
+* Fix `Representation#to_json` corrupting free-form map keys: only the representation's own attribute names are camelized now, so the keys of Keycloak-defined maps (e.g. `config`, `attributes`) are sent verbatim instead of being camelized (e.g. `max_retries` is no longer mangled to `maxRetries`)
+* Fix `to_json` raising `NoMethodError` when a free-form map contains an empty-string key
+
 ## [1.1.3] - 2024-07-12
 
 * Client Authorization management support (thanks to @tillawy)

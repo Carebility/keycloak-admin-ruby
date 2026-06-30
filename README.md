@@ -119,6 +119,7 @@ All options have a default value. However, all of them can be changed in your in
 * Create, update, and delete clients
 * Get list of groups, create/save a group
 * Get list of roles, save a role
+* Get list of client roles, create a client role
 * Get list of realms, save/update/delete a realm
 * Get list of client role mappings for a user/group
 * Get list of members of a group
@@ -129,7 +130,9 @@ All options have a default value. However, all of them can be changed in your in
 * Add a Group on a User
 * Remove a Group from a User
 * Get list of Identity Providers
-* Create Identity Providers
+* Create, update, and delete an Identity Provider
+* List and update Identity Provider mappers
+* Manage authentication flows and executions (copy a flow, list/add/update/delete executions, create an execution config)
 * Link/Unlink users to federated identity provider brokers
 * Execute actions emails
 * Send forgot passsword mail
@@ -417,6 +420,27 @@ Takes `role`, which must be of type `KeycloakAdmin::RoleRepresentation`.
 KeycloakAdmin.realm("a_realm").roles.save(role)
 ```
 
+### Get list of client roles
+
+Returns an array of `KeycloakAdmin::RoleRepresentation`. Takes the client's id
+(the internal UUID, not the `clientId`).
+
+```ruby
+client_id = "1869e876-71b4-4de2-849e-66540db3a098"
+KeycloakAdmin.realm("a_realm").client_roles.list(client_id)
+```
+
+### Create a client role
+
+Takes the client's id (the internal UUID, not the `clientId`) and a `role` of
+type `KeycloakAdmin::RoleRepresentation`.
+
+```ruby
+client_id = "1869e876-71b4-4de2-849e-66540db3a098"
+role      = KeycloakAdmin::RoleRepresentation.from_hash("name" => "my-role")
+KeycloakAdmin.realm("a_realm").client_roles.create(client_id, role)
+```
+
 ### Get list of client role mappings for a user/group
 
 Returns an array of `KeycloakAdmin::RoleRepresentation`.
@@ -471,6 +495,120 @@ Returns an array of `KeycloakAdmin::IdentityProviderRepresentation`.
 
 ```ruby
 KeycloakAdmin.realm("a_realm").identity_providers.list
+```
+
+### Update an identity provider
+
+Takes the provider `alias` and an `identity_provider`, which must be of type
+`KeycloakAdmin::IdentityProviderRepresentation`. Returns `true`.
+
+```ruby
+KeycloakAdmin.realm("a_realm").identity_providers.update("my-saml-idp", identity_provider)
+```
+
+### Delete an identity provider
+
+Takes the provider `alias`. Returns `true`.
+
+```ruby
+KeycloakAdmin.realm("a_realm").identity_providers.delete("my-saml-idp")
+```
+
+### List identity provider mappers
+
+Takes the provider `alias`. Returns an array of
+`KeycloakAdmin::IdentityProviderMapperRepresentation`.
+
+```ruby
+KeycloakAdmin.realm("a_realm").identity_providers.list_mappers("my-saml-idp")
+```
+
+### Update an identity provider mapper
+
+Takes the provider `alias`, the `mapper_id`, and a `mapping`, which must be of
+type `KeycloakAdmin::IdentityProviderMapperRepresentation`. Returns `true`.
+
+```ruby
+mapper_id = "f1e0b6b1-5d2a-4f8e-9c3a-0b1c2d3e4f5a"
+KeycloakAdmin.realm("a_realm").identity_providers.update_mapping("my-saml-idp", mapper_id, mapping)
+```
+
+### Manage authentication flows and executions
+
+#### List authentication flows
+
+Returns an array of `KeycloakAdmin::AuthenticationFlowRepresentation`.
+
+```ruby
+KeycloakAdmin.realm("a_realm").authentication.list_flows
+```
+
+#### Find a flow by its alias
+
+Returns a `KeycloakAdmin::AuthenticationFlowRepresentation`, or `nil`.
+
+```ruby
+KeycloakAdmin.realm("a_realm").authentication.find_flow_by_alias("browser")
+```
+
+#### Copy a flow
+
+Takes the `source_flow_alias` to copy and the `new_name` for the copy. Returns
+`true`.
+
+```ruby
+KeycloakAdmin.realm("a_realm").authentication.copy_flow("browser", "my-browser-copy")
+```
+
+#### List a flow's executions
+
+Takes the flow `alias`. Returns an array of
+`KeycloakAdmin::AuthenticationExecutionInfoRepresentation`.
+
+```ruby
+KeycloakAdmin.realm("a_realm").authentication.list_executions("my-browser-copy")
+```
+
+#### Update an execution
+
+Takes the flow `alias` and an `execution_info`, which must be of type
+`KeycloakAdmin::AuthenticationExecutionInfoRepresentation`. Returns `true`.
+
+```ruby
+KeycloakAdmin.realm("a_realm").authentication.update_execution("my-browser-copy", execution_info)
+```
+
+#### Add an execution to a flow
+
+Takes the flow `alias` and a `provider_id`. Returns the id of the created
+execution.
+
+```ruby
+KeycloakAdmin.realm("a_realm").authentication.add_execution("my-browser-copy", "auth-cookie")
+```
+
+#### Create an execution config
+
+Takes the `execution_id` and an `authenticator_config`, which must be of type
+`KeycloakAdmin::AuthenticatorConfigRepresentation`. Returns the id of the created
+config.
+
+```ruby
+execution_id = "a1b2c3d4-5e6f-7a8b-9c0d-1e2f3a4b5c6d"
+config = KeycloakAdmin::AuthenticatorConfigRepresentation.from_hash(
+  "alias"  => "my-config",
+  "config" => { "defaultProvider" => "my-saml-idp" }
+)
+KeycloakAdmin.realm("a_realm").authentication.create_execution_config(execution_id, config)
+```
+
+#### Delete an execution
+
+Takes the `execution_id`. Returns `true`.
+
+```ruby
+execution_id = "a1b2c3d4-5e6f-7a8b-9c0d-1e2f3a4b5c6d"
+KeycloakAdmin.realm("a_realm").authentication.delete_execution(execution_id)
 ```
 
 ### Manage [Client Authorization Resources & Scopes](https://www.keycloak.org/docs/latest/authorization_services/index.html#_resource_overview)
