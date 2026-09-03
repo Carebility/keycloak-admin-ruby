@@ -8,6 +8,6 @@
 # workspace bake (the ..:/workspace bind mount in docker-compose.yml shadows it
 # at runtime anyway). See docs/projects/devcontainer-image-optimization.
 
-FROM ghcr.io/carebility/carebility-devcontainer:latest
+FROM us-central1-docker.pkg.dev/carebility-dev-ops/carebility-base-images/carebility-devcontainer:latest
 
 ENV DEVCONTAINER_APP=keycloak-admin-ruby
