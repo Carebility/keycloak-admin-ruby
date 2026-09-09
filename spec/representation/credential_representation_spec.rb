@@ -11,10 +11,12 @@ RSpec.describe KeycloakAdmin::CredentialRepresentation do
         "secretData"     => "{\"value\":\"hashed\",\"salt\":\"c2FsdA==\"}",
         "credentialData" => "{\"hashIterations\":27500,\"algorithm\":\"pbkdf2-sha256\"}",
         "priority"       => 10,
-        "temporary"      => false
+        "temporary"      => false,
+        "federationLink" => "8d2c7f1a-0b3e-4c5d-9e6f-1a2b3c4d5e6f"
       )
 
       expect(rep.id).to eq "6f1b1c9e-2f3a-4d5b-8c7d-9e0f1a2b3c4d"
+      expect(rep.federation_link).to eq "8d2c7f1a-0b3e-4c5d-9e6f-1a2b3c4d5e6f"
       expect(rep.type).to eq "password"
       expect(rep.user_label).to eq "My password"
       expect(rep.created_date).to eq 1757376000000
@@ -61,10 +63,11 @@ RSpec.describe KeycloakAdmin::CredentialRepresentation do
 
   describe "#to_json" do
     it "camelizes the snake_case attributes back to the admin API's names" do
-      rep              = described_class.new
-      rep.user_label   = "My password"
-      rep.created_date = 1757376000000
-      expect(rep.to_json).to eq '{"userLabel":"My password","createdDate":1757376000000}'
+      rep                 = described_class.new
+      rep.user_label      = "My password"
+      rep.created_date    = 1757376000000
+      rep.federation_link = "8d2c7f1a-0b3e-4c5d-9e6f-1a2b3c4d5e6f"
+      expect(rep.to_json).to eq '{"userLabel":"My password","createdDate":1757376000000,"federationLink":"8d2c7f1a-0b3e-4c5d-9e6f-1a2b3c4d5e6f"}'
     end
   end
 end

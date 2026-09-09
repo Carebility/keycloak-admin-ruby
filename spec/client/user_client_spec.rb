@@ -1,4 +1,4 @@
-RSpec.describe KeycloakAdmin::TokenClient do
+RSpec.describe KeycloakAdmin::UserClient do
   describe "#initialize" do
     let(:realm_name) { nil }
     before(:each) do

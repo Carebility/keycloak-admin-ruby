@@ -43,9 +43,10 @@ module KeycloakAdmin
       @remember_me     = false
     end
 
-    # Reads the plugin's snake_case keys. Absent boolean flags keep the gem's
-    # safe defaults instead of being reset to nil (which would drop them from
-    # the payload and hand control back to the plugin's defaults).
+    # Reads the plugin's snake_case keys. A boolean flag that is absent from the
+    # hash keeps the gem's safe default (`false`); a flag that is present is
+    # taken as given, including an explicit `nil`, which `as_json` serializes
+    # as `false`. Either way every flag is always on the wire.
     def self.from_hash(hash)
       request                       = new
       request.email                 = hash["email"]
@@ -69,20 +70,32 @@ module KeycloakAdmin
     end
 
     # Snake_case keys, exactly as the attribute names. The boolean flags are
-    # always present and coerced with `!!` (so an explicit nil serializes as
-    # `false` rather than being dropped); every other nil value is omitted.
+    # always present: `nil` serializes as `false` (never omitted, so the
+    # plugin's own defaults never apply) and anything other than `true`,
+    # `false` or `nil` raises — Ruby truthiness would turn `"false"` or `0`
+    # into `true`, i.e. a reusable link from a caller who tried to say no.
+    # Every other nil value is omitted.
     def as_json(options=nil)
       json = instance_variables.each_with_object({}) do |ivar, acc|
         name  = ivar.to_s[1..-1]
         value = instance_variable_get(ivar)
         if BOOLEAN_FLAGS.include?(name)
-          acc[name] = !!value
+          acc[name] = boolean_flag(name, value)
         elsif !value.nil?
           acc[name] = value
         end
       end
       BOOLEAN_FLAGS.each { |flag| json[flag] = false unless json.key?(flag) }
       json
+    end
+
+    private
+
+    def boolean_flag(name, value)
+      return false if value.nil?
+      return value if value == true || value == false
+
+      raise ArgumentError.new("#{name} must be true, false or nil, got #{value.inspect}")
     end
   end
 end

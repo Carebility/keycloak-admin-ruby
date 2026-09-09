@@ -234,7 +234,7 @@ KeycloakAdmin.realm("a_realm").users.update_password(user_id, new_password)
 
 ### Get a user's credentials
 
-Returns an array of `KeycloakAdmin::CredentialRepresentation` (`id`, `type`, `user_label`, `created_date`, `temporary`, ...). Use it, for instance, to tell whether a user has a `password` credential.
+Returns an array of `KeycloakAdmin::CredentialRepresentation` (`id`, `type`, `user_label`, `created_date`, `temporary`, `federation_link` — set when a user-storage provider such as LDAP owns the credential — ...). Use it, for instance, to tell whether a user has a `password` credential.
 
 ```ruby
 user_id = "95985b21-d884-4bbd-b852-cb8cd365afc2"
@@ -286,7 +286,7 @@ KeycloakAdmin.realm("a_realm").configurable_token.exchange_with(user_access_toke
 
 Calls the realm-rooted `POST /realms/{realm}/magic-link` endpoint with the same admin bearer token as the rest of this gem (the service account needs `manage-users`). Takes a `KeycloakAdmin::MagicLinkRequestRepresentation` and returns an instance of `KeycloakAdmin::MagicLinkResponseRepresentation` (`user_id`, `link`, `sent`).
 
-The request is serialized with the plugin's snake_case field names (`client_id`, `redirect_uri`, `expiration_seconds`, ...), and `nil` attributes are omitted, except the boolean flags below, which are always sent (an explicit `nil` serializes as `false`). `expiration_seconds` has no default and one of `email` / `username` is required — `create` raises `ArgumentError` otherwise, as it does when the argument is not a `MagicLinkRequestRepresentation`. The boolean flags `force_create`, `update_password`, `update_profile`, `send_email`, `reusable` and `remember_me` default to `false` in the gem (the plugin's own default for `reusable` is `true`), so a link is single-use unless you explicitly opt in.
+The request is serialized with the plugin's snake_case field names (`client_id`, `redirect_uri`, `expiration_seconds`, ...), and `nil` attributes are omitted, except the boolean flags below, which are always sent (an explicit `nil` serializes as `false`; any other non-boolean value such as `"false"` or `0` raises `ArgumentError` at serialization rather than being coerced — Ruby truthiness would turn it into `true`). The response is serialized with the same snake_case keys, so `response.to_json` round-trips through `MagicLinkResponseRepresentation.from_json`. `expiration_seconds` has no default and one of `email` / `username` is required — `create` raises `ArgumentError` otherwise, as it does when the argument is not a `MagicLinkRequestRepresentation`. The boolean flags `force_create`, `update_password`, `update_profile`, `send_email`, `reusable` and `remember_me` default to `false` in the gem (the plugin's own default for `reusable` is `true`), so a link is single-use unless you explicitly opt in.
 
 ```ruby
 request                    = KeycloakAdmin::MagicLinkRequestRepresentation.new

@@ -101,16 +101,25 @@ RSpec.describe KeycloakAdmin::MagicLinkRequestRepresentation do
       expect(parsed.keys).to include(*described_class::BOOLEAN_FLAGS)
     end
 
-    it "coerces every boolean flag with !! so truthy and falsy values serialize as true/false" do
+    it "serializes true and false flags as given" do
       request                 = described_class.new
-      request.update_password = "yes"
-      request.send_email      = 0
-      request.remember_me     = nil
+      request.update_password = true
+      request.reusable        = false
 
       parsed = JSON.parse(request.to_json)
       expect(parsed["update_password"]).to eq true
-      expect(parsed["send_email"]).to eq true
-      expect(parsed["remember_me"]).to eq false
+      expect(parsed["reusable"]).to eq false
+    end
+
+    it "raises instead of coercing a non-boolean flag (\"false\" and 0 are truthy in Ruby)" do
+      described_class::BOOLEAN_FLAGS.each do |flag|
+        ["false", "true", 0, 1, "yes"].each do |value|
+          request = described_class.new
+          request.public_send("#{flag}=", value)
+          expect { request.to_json }.to raise_error(ArgumentError, /#{flag} must be true, false or nil/),
+            "#{flag}=#{value.inspect} was serialized instead of raising"
+        end
+      end
     end
   end
 
@@ -151,6 +160,12 @@ RSpec.describe KeycloakAdmin::MagicLinkRequestRepresentation do
       json = request.to_json
       expect(json).to include '"reusable":false'
       expect(json).to include '"force_create":false'
+    end
+
+    it "does not let a stringy flag from the hash reach the wire" do
+      request = described_class.from_hash("email" => "jane@example.com", "reusable" => "false")
+
+      expect { request.to_json }.to raise_error(ArgumentError, /reusable must be true, false or nil/)
     end
   end
 end
