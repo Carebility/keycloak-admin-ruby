@@ -107,6 +107,10 @@ module KeycloakAdmin
       AuthenticationFlowClient.new(@configuration, self)
     end
 
+    def magic_links
+      MagicLinkClient.new(@configuration, self)
+    end
+
     def user(user_id)
       UserResource.new(@configuration, self, user_id)
     end
