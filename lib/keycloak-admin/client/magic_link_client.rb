@@ -13,6 +13,9 @@ module KeycloakAdmin
 
     def create(magic_link_request_representation)
       raise ArgumentError.new("magic_link_request_representation must be defined") if magic_link_request_representation.nil?
+      unless magic_link_request_representation.is_a?(MagicLinkRequestRepresentation)
+        raise ArgumentError.new("magic_link_request_representation must be a MagicLinkRequestRepresentation")
+      end
       raise ArgumentError.new("expiration_seconds must be defined") if magic_link_request_representation.expiration_seconds.nil?
       if magic_link_request_representation.email.nil? && magic_link_request_representation.username.nil?
         raise ArgumentError.new("email or username must be defined")

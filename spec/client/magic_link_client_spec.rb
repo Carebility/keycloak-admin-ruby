@@ -128,6 +128,12 @@ RSpec.describe KeycloakAdmin::MagicLinkClient do
       expect { @magic_link_client.create(nil) }.to raise_error(ArgumentError, "magic_link_request_representation must be defined")
     end
 
+    it "raises argument error when the request is not a MagicLinkRequestRepresentation" do
+      expect { @magic_link_client.create({}) }.to raise_error(ArgumentError, "magic_link_request_representation must be a MagicLinkRequestRepresentation")
+      expect { @magic_link_client.create("email" => "jane@example.com") }.to raise_error(ArgumentError, "magic_link_request_representation must be a MagicLinkRequestRepresentation")
+      expect(@captured).to be_empty
+    end
+
     it "raises argument error when expiration_seconds is nil" do
       request.expiration_seconds = nil
       expect { @magic_link_client.create(request) }.to raise_error(ArgumentError, "expiration_seconds must be defined")
