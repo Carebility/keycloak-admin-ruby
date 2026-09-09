@@ -9,6 +9,7 @@ module KeycloakAdmin
       :priority,
       :value,
       :temporary,
+      :federation_link,
       :device,
       :hashedSaltedValue,
       :salt,
@@ -43,6 +44,7 @@ module KeycloakAdmin
       credential.priority          = hash["priority"]
       credential.value             = hash["value"]
       credential.temporary         = hash["temporary"]
+      credential.federation_link   = hash["federationLink"]
       credential.device            = hash["device"]
       credential.hashedSaltedValue = hash["hashedSaltedValue"]
       credential.salt              = hash["salt"]
