@@ -286,7 +286,7 @@ KeycloakAdmin.realm("a_realm").configurable_token.exchange_with(user_access_toke
 
 Calls the realm-rooted `POST /realms/{realm}/magic-link` endpoint with the same admin bearer token as the rest of this gem (the service account needs `manage-users`). Takes a `KeycloakAdmin::MagicLinkRequestRepresentation` and returns an instance of `KeycloakAdmin::MagicLinkResponseRepresentation` (`user_id`, `link`, `sent`).
 
-The request is serialized with the plugin's snake_case field names (`client_id`, `redirect_uri`, `expiration_seconds`, ...), and `nil` attributes are omitted. `expiration_seconds` has no default and one of `email` / `username` is required — `create` raises `ArgumentError` otherwise. The boolean flags `force_create`, `update_password`, `update_profile`, `send_email`, `reusable` and `remember_me` default to `false` in the gem (the plugin's own default for `reusable` is `true`), so a link is single-use unless you explicitly opt in.
+The request is serialized with the plugin's snake_case field names (`client_id`, `redirect_uri`, `expiration_seconds`, ...), and `nil` attributes are omitted, except the boolean flags below, which are always sent (an explicit `nil` serializes as `false`). `expiration_seconds` has no default and one of `email` / `username` is required — `create` raises `ArgumentError` otherwise, as it does when the argument is not a `MagicLinkRequestRepresentation`. The boolean flags `force_create`, `update_password`, `update_profile`, `send_email`, `reusable` and `remember_me` default to `false` in the gem (the plugin's own default for `reusable` is `true`), so a link is single-use unless you explicitly opt in.
 
 ```ruby
 request                    = KeycloakAdmin::MagicLinkRequestRepresentation.new
