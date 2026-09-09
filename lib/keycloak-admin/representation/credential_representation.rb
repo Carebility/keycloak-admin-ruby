@@ -1,8 +1,15 @@
 module KeycloakAdmin
   class CredentialRepresentation < Representation
-    attr_accessor :type,
-      :device,
+    attr_accessor :id,
+      :type,
+      :user_label,
+      :created_date,
+      :secret_data,
+      :credential_data,
+      :priority,
       :value,
+      :temporary,
+      :device,
       :hashedSaltedValue,
       :salt,
       :hashIterations,
@@ -10,9 +17,7 @@ module KeycloakAdmin
       :algorithm,
       :digits,
       :period,
-      :created_date,
-      :config,
-      :temporary
+      :config
 
     def self.from_password(password, temporary=false)
       credential = new
@@ -28,11 +33,25 @@ module KeycloakAdmin
     end
 
     def self.from_hash(hash)
-      credential = new
-      hash.each do |key, value|
-        property = "@#{key}".to_sym
-        credential.instance_variable_set(property, value)
-      end
+      credential                   = new
+      credential.id                = hash["id"]
+      credential.type              = hash["type"]
+      credential.user_label        = hash["userLabel"]
+      credential.created_date      = hash["createdDate"]
+      credential.secret_data       = hash["secretData"]
+      credential.credential_data   = hash["credentialData"]
+      credential.priority          = hash["priority"]
+      credential.value             = hash["value"]
+      credential.temporary         = hash["temporary"]
+      credential.device            = hash["device"]
+      credential.hashedSaltedValue = hash["hashedSaltedValue"]
+      credential.salt              = hash["salt"]
+      credential.hashIterations    = hash["hashIterations"]
+      credential.counter           = hash["counter"]
+      credential.algorithm         = hash["algorithm"]
+      credential.digits            = hash["digits"]
+      credential.period            = hash["period"]
+      credential.config            = hash["config"]
       credential
     end
   end

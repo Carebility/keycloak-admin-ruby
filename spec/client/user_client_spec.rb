@@ -122,6 +122,38 @@ RSpec.describe KeycloakAdmin::TokenClient do
     end
   end
 
+  describe "#credentials_url" do
+    let(:realm_name) { "valid-realm" }
+
+    before(:each) do
+      @client = KeycloakAdmin.realm(realm_name).users
+    end
+
+    it "raises an error when user_id is not defined" do
+      expect { @client.credentials_url(nil) }.to raise_error(ArgumentError, "user_id must be defined")
+    end
+
+    it "returns a proper url when user_id is defined" do
+      expect(@client.credentials_url(42)).to eq "http://auth.service.io/auth/admin/realms/valid-realm/users/42/credentials"
+    end
+  end
+
+  describe "#federated_identities_url" do
+    let(:realm_name) { "valid-realm" }
+
+    before(:each) do
+      @client = KeycloakAdmin.realm(realm_name).users
+    end
+
+    it "raises an error when user_id is not defined" do
+      expect { @client.federated_identities_url(nil) }.to raise_error(ArgumentError, "user_id must be defined")
+    end
+
+    it "returns a proper url when user_id is defined" do
+      expect(@client.federated_identities_url(42)).to eq "http://auth.service.io/auth/admin/realms/valid-realm/users/42/federated-identity"
+    end
+  end
+
   describe "#save" do
     let(:realm_name) { "valid-realm" }
     let(:user) { KeycloakAdmin::UserRepresentation.from_hash(
@@ -344,6 +376,92 @@ RSpec.describe KeycloakAdmin::TokenClient do
       it 'raise argument error' do
         expect { @user_client.sessions(user_id) }.to raise_error(ArgumentError)
       end
+    end
+  end
+
+  describe "#credentials" do
+    let(:realm_name) { "valid-realm" }
+    let(:user_id)    { "95985b21-d884-4bbd-b852-cb8cd365afc2" }
+
+    before(:each) do
+      @user_client = KeycloakAdmin.realm(realm_name).users
+      stub_token_client
+      allow_any_instance_of(RestClient::Resource).to receive(:get).and_return '[{"id":"6f1b1c9e-2f3a-4d5b-8c7d-9e0f1a2b3c4d","type":"password","userLabel":"My password","createdDate":1757376000000,"temporary":false},{"id":"7a2c2d0f-3a4b-4e6c-9d8e-0f1a2b3c4d5e","type":"otp","createdDate":1757376100000}]'
+    end
+
+    it "gets the user's credentials from the credentials url" do
+      expect(RestClient::Resource).to receive(:new).with(
+        "http://auth.service.io/auth/admin/realms/valid-realm/users/95985b21-d884-4bbd-b852-cb8cd365afc2/credentials", anything).and_call_original
+
+      credentials = @user_client.credentials(user_id)
+      expect(credentials.length).to eq 2
+      expect(credentials).to all(be_a(KeycloakAdmin::CredentialRepresentation))
+      expect(credentials.map(&:type)).to eq ["password", "otp"]
+      expect(credentials.first.id).to eq "6f1b1c9e-2f3a-4d5b-8c7d-9e0f1a2b3c4d"
+      expect(credentials.first.user_label).to eq "My password"
+      expect(credentials.first.created_date).to eq 1757376000000
+      expect(credentials.first.temporary).to eq false
+    end
+
+    it "passes rest client options" do
+      rest_client_options = {timeout: 10}
+      allow_any_instance_of(KeycloakAdmin::Configuration).to receive(:rest_client_options).and_return rest_client_options
+
+      expect(RestClient::Resource).to receive(:new).with(
+        "http://auth.service.io/auth/admin/realms/valid-realm/users/95985b21-d884-4bbd-b852-cb8cd365afc2/credentials", rest_client_options).and_call_original
+
+      @user_client.credentials(user_id)
+    end
+
+    it "returns an empty array when the user has no credentials" do
+      allow_any_instance_of(RestClient::Resource).to receive(:get).and_return '[]'
+      expect(@user_client.credentials(user_id)).to eq []
+    end
+
+    it "raises argument error when user_id is nil" do
+      expect { @user_client.credentials(nil) }.to raise_error(ArgumentError, "user_id must be defined")
+    end
+  end
+
+  describe "#federated_identities" do
+    let(:realm_name) { "valid-realm" }
+    let(:user_id)    { "95985b21-d884-4bbd-b852-cb8cd365afc2" }
+
+    before(:each) do
+      @user_client = KeycloakAdmin.realm(realm_name).users
+      stub_token_client
+      allow_any_instance_of(RestClient::Resource).to receive(:get).and_return '[{"identityProvider":"google","userId":"108204234903240","userName":"jane@example.com"}]'
+    end
+
+    it "gets the user's federated identities from the federated-identity url" do
+      expect(RestClient::Resource).to receive(:new).with(
+        "http://auth.service.io/auth/admin/realms/valid-realm/users/95985b21-d884-4bbd-b852-cb8cd365afc2/federated-identity", anything).and_call_original
+
+      identities = @user_client.federated_identities(user_id)
+      expect(identities.length).to eq 1
+      expect(identities.first).to be_a(KeycloakAdmin::FederatedIdentityRepresentation)
+      expect(identities.first.identity_provider).to eq "google"
+      expect(identities.first.user_id).to eq "108204234903240"
+      expect(identities.first.user_name).to eq "jane@example.com"
+    end
+
+    it "passes rest client options" do
+      rest_client_options = {timeout: 10}
+      allow_any_instance_of(KeycloakAdmin::Configuration).to receive(:rest_client_options).and_return rest_client_options
+
+      expect(RestClient::Resource).to receive(:new).with(
+        "http://auth.service.io/auth/admin/realms/valid-realm/users/95985b21-d884-4bbd-b852-cb8cd365afc2/federated-identity", rest_client_options).and_call_original
+
+      @user_client.federated_identities(user_id)
+    end
+
+    it "returns an empty array when the user has no federated identities" do
+      allow_any_instance_of(RestClient::Resource).to receive(:get).and_return '[]'
+      expect(@user_client.federated_identities(user_id)).to eq []
+    end
+
+    it "raises argument error when user_id is nil" do
+      expect { @user_client.federated_identities(nil) }.to raise_error(ArgumentError, "user_id must be defined")
     end
   end
 

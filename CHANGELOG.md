@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - 2026-09-09
+
+* Add `UserClient#credentials` to list a user's credentials (`GET /admin/realms/{realm}/users/{id}/credentials`) and `UserClient#credentials_url`
+* Add `UserClient#federated_identities` to list a user's federated identities (`GET /admin/realms/{realm}/users/{id}/federated-identity`) and `UserClient#federated_identities_url`
+* `CredentialRepresentation.from_hash` now reads the admin API's camelCase keys explicitly (`id`, `type`, `userLabel`, `createdDate`, `secretData`, `credentialData`, `priority`, `value`, `temporary`, plus the legacy hashed-password fields) into snake_case attributes; new attributes `id`, `user_label`, `secret_data`, `credential_data`, `priority`. Keys that are not part of the representation are no longer copied into ad-hoc instance variables, and `CredentialRepresentation.from_hash(...).to_json` now emits every known key (`null` for the absent ones), like `UserRepresentation` already does
+* Add `MagicLinkClient#create` for the phasetwo `keycloak-magic-link` extension (`POST /realms/{realm}/magic-link`, realm-rooted, admin bearer token), registered as `RealmClient#magic_links`
+* Add `MagicLinkRequestRepresentation` (serialized with the plugin's snake_case keys, nil attributes omitted; `force_create`, `update_password`, `update_profile`, `send_email`, `reusable` and `remember_me` default to `false` and are always serialized — an explicit `nil` is sent as `false`, never omitted — note the plugin's own default for `reusable` is `true`) and `MagicLinkResponseRepresentation` (`user_id`, `link`, `sent`)
+
 ## [1.2.0] - 2026-06-02
 
 * Add `IdentityProviderClient#update`, `#delete`, `#list_mappers`, `#update_mapping`
