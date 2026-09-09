@@ -67,6 +67,7 @@ RSpec.describe KeycloakAdmin::MagicLinkClient do
       @magic_link_client.create(request)
       expect(@captured[:headers][:Authorization]).to eq "Bearer test_access_token"
       expect(@captured[:headers][:content_type]).to eq :json
+      expect(@captured[:headers][:accept]).to eq :json
     end
 
     it "sends exactly the plugin's snake_case keys with safe boolean defaults" do
