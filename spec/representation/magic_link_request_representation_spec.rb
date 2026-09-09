@@ -86,6 +86,32 @@ RSpec.describe KeycloakAdmin::MagicLinkRequestRepresentation do
       expect(parsed).not_to have_key("state")
       expect(parsed).not_to have_key("expiration_seconds")
     end
+
+    it "serializes an explicit nil boolean flag as false instead of omitting it" do
+      request              = described_class.new
+      request.reusable     = nil
+      request.force_create = nil
+
+      json   = request.to_json
+      parsed = JSON.parse(json)
+      expect(json).to include '"reusable":false'
+      expect(json).to include '"force_create":false'
+      expect(parsed["reusable"]).to eq false
+      expect(parsed["force_create"]).to eq false
+      expect(parsed.keys).to include(*described_class::BOOLEAN_FLAGS)
+    end
+
+    it "coerces every boolean flag with !! so truthy and falsy values serialize as true/false" do
+      request                 = described_class.new
+      request.update_password = "yes"
+      request.send_email      = 0
+      request.remember_me     = nil
+
+      parsed = JSON.parse(request.to_json)
+      expect(parsed["update_password"]).to eq true
+      expect(parsed["send_email"]).to eq true
+      expect(parsed["remember_me"]).to eq false
+    end
   end
 
   describe ".from_hash" do
@@ -117,6 +143,14 @@ RSpec.describe KeycloakAdmin::MagicLinkRequestRepresentation do
       expect(request.send_email).to eq false
       expect(request.reusable).to eq false
       expect(request.remember_me).to eq false
+    end
+
+    it "serializes an explicit null boolean flag as false" do
+      request = described_class.from_hash("email" => "jane@example.com", "reusable" => nil, "force_create" => nil)
+
+      json = request.to_json
+      expect(json).to include '"reusable":false'
+      expect(json).to include '"force_create":false'
     end
   end
 end

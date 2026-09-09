@@ -96,6 +96,17 @@ RSpec.describe KeycloakAdmin::MagicLinkClient do
       expect(@captured[:payload]).to include '"reusable":true'
     end
 
+    it "still sends reusable:false and force_create:false when a caller sets them to nil" do
+      request.reusable     = nil
+      request.force_create = nil
+      @magic_link_client.create(request)
+      expect(@captured[:payload]).to include '"reusable":false'
+      expect(@captured[:payload]).to include '"force_create":false'
+      parsed = JSON.parse(@captured[:payload])
+      expect(parsed["reusable"]).to eq false
+      expect(parsed["force_create"]).to eq false
+    end
+
     it "accepts a username instead of an email" do
       request.email    = nil
       request.username = "jane"

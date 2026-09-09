@@ -4,7 +4,8 @@ module KeycloakAdmin
   # Unlike the Keycloak Admin API, the plugin reads snake_case JSON field names
   # (`client_id`, `redirect_uri`, `expiration_seconds`, ...), so this
   # representation opts out of the camelization every other representation gets
-  # from `Representation#as_json`. Nil attributes are omitted from the payload.
+  # from `Representation#as_json`. Nil attributes are omitted from the payload,
+  # except the boolean flags, which are always serialized (see `as_json`).
   #
   # The boolean flags default to `false` in the gem even where the plugin's own
   # default is `true` (`reusable`), so a caller who forgets a field gets a
@@ -27,6 +28,11 @@ module KeycloakAdmin
       :code_challenge,
       :code_challenge_method,
       :response_mode
+
+    # Flags that must always be present in the payload. If one were omitted the
+    # plugin would apply its own default, and for `reusable` that default is
+    # `true` — an explicit nil must not fail open.
+    BOOLEAN_FLAGS = %w[force_create update_password update_profile send_email reusable remember_me].freeze
 
     def initialize
       @force_create    = false
@@ -62,12 +68,21 @@ module KeycloakAdmin
       request
     end
 
-    # Snake_case keys, exactly as the attribute names; nil values are omitted.
+    # Snake_case keys, exactly as the attribute names. The boolean flags are
+    # always present and coerced with `!!` (so an explicit nil serializes as
+    # `false` rather than being dropped); every other nil value is omitted.
     def as_json(options=nil)
-      instance_variables.each_with_object({}) do |ivar, json|
+      json = instance_variables.each_with_object({}) do |ivar, acc|
+        name  = ivar.to_s[1..-1]
         value = instance_variable_get(ivar)
-        json[ivar.to_s[1..-1]] = value unless value.nil?
+        if BOOLEAN_FLAGS.include?(name)
+          acc[name] = !!value
+        elsif !value.nil?
+          acc[name] = value
+        end
       end
+      BOOLEAN_FLAGS.each { |flag| json[flag] = false unless json.key?(flag) }
+      json
     end
   end
 end
