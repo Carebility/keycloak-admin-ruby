@@ -147,6 +147,20 @@ module KeycloakAdmin
       JSON.parse(response).map { |group_as_hash| GroupRepresentation.from_hash(group_as_hash) }
     end
 
+    def credentials(user_id)
+      response = execute_http do
+        RestClient::Resource.new(credentials_url(user_id), @configuration.rest_client_options).get(headers)
+      end
+      JSON.parse(response).map { |credential_as_hash| CredentialRepresentation.from_hash(credential_as_hash) }
+    end
+
+    def federated_identities(user_id)
+      response = execute_http do
+        RestClient::Resource.new(federated_identities_url(user_id), @configuration.rest_client_options).get(headers)
+      end
+      JSON.parse(response).map { |federated_identity_as_hash| FederatedIdentityRepresentation.from_hash(federated_identity_as_hash) }
+    end
+
     def update_password(user_id, new_password)
       execute_http do
         RestClient::Request.execute(
@@ -279,6 +293,16 @@ module KeycloakAdmin
     def groups_url(user_id)
       raise ArgumentError.new("user_id must be defined") if user_id.nil?
       "#{users_url(user_id)}/groups"
+    end
+
+    def credentials_url(user_id)
+      raise ArgumentError.new("user_id must be defined") if user_id.nil?
+      "#{users_url(user_id)}/credentials"
+    end
+
+    def federated_identities_url(user_id)
+      raise ArgumentError.new("user_id must be defined") if user_id.nil?
+      "#{users_url(user_id)}/federated-identity"
     end
 
     def impersonation_url(user_id)
