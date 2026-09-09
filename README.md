@@ -113,6 +113,7 @@ All options have a default value. However, all of them can be changed in your in
 * Create/update/get/delete a user
 * Get list of users, search for user(s)
 * Reset credentials
+* Get a user's credentials
 * Impersonate a user
 * Exchange a configurable token
 * Get list of clients, or find a client by its id or client_id
@@ -134,8 +135,10 @@ All options have a default value. However, all of them can be changed in your in
 * List and update Identity Provider mappers
 * Manage authentication flows and executions (copy a flow, list/add/update/delete executions, create an execution config)
 * Link/Unlink users to federated identity provider brokers
+* Get a user's federated identities
 * Execute actions emails
 * Send forgot passsword mail
+* Create a magic link (phasetwo `keycloak-magic-link` extension)
 * Client Authorization, create, update, get, delete Resource, Scope, Policy, Permission, Policy Enforcer
 
 ### Get an access token
@@ -229,6 +232,25 @@ new_password = "coco"
 KeycloakAdmin.realm("a_realm").users.update_password(user_id, new_password)
 ```
 
+### Get a user's credentials
+
+Returns an array of `KeycloakAdmin::CredentialRepresentation` (`id`, `type`, `user_label`, `created_date`, `temporary`, ...). Use it, for instance, to tell whether a user has a `password` credential.
+
+```ruby
+user_id = "95985b21-d884-4bbd-b852-cb8cd365afc2"
+credentials = KeycloakAdmin.realm("a_realm").users.credentials(user_id)
+credentials.any? { |credential| credential.type == "password" }
+```
+
+### Get a user's federated identities
+
+Returns an array of `KeycloakAdmin::FederatedIdentityRepresentation` (`identity_provider`, `user_id`, `user_name`), one per identity provider broker the user is linked to.
+
+```ruby
+user_id = "95985b21-d884-4bbd-b852-cb8cd365afc2"
+KeycloakAdmin.realm("a_realm").users.federated_identities(user_id)
+```
+
 ### Impersonate a password directly
 
 Returns an instance of `KeycloakAdmin::ImpersonationRepresentation`.
@@ -256,6 +278,26 @@ Returns an instance of `KeycloakAdmin::TokenRepresentation`.
 user_access_token         = "abqsdofnqdsogn"
 token_lifespan_in_seconds = 20
 KeycloakAdmin.realm("a_realm").configurable_token.exchange_with(user_access_token, token_lifespan_in_seconds)
+```
+
+### Create a magic link
+
+*Requires your Keycloak server to have deployed the phasetwo `keycloak-magic-link` extension* (https://github.com/p2-inc/keycloak-magic-link).
+
+Calls the realm-rooted `POST /realms/{realm}/magic-link` endpoint with the same admin bearer token as the rest of this gem (the service account needs `manage-users`). Takes a `KeycloakAdmin::MagicLinkRequestRepresentation` and returns an instance of `KeycloakAdmin::MagicLinkResponseRepresentation` (`user_id`, `link`, `sent`).
+
+The request is serialized with the plugin's snake_case field names (`client_id`, `redirect_uri`, `expiration_seconds`, ...), and `nil` attributes are omitted. `expiration_seconds` has no default and one of `email` / `username` is required — `create` raises `ArgumentError` otherwise. The boolean flags `force_create`, `update_password`, `update_profile`, `send_email`, `reusable` and `remember_me` default to `false` in the gem (the plugin's own default for `reusable` is `true`), so a link is single-use unless you explicitly opt in.
+
+```ruby
+request                    = KeycloakAdmin::MagicLinkRequestRepresentation.new
+request.email              = "jane@example.com"
+request.client_id          = "web-app"
+request.redirect_uri       = "https://app.example.com/login"
+request.expiration_seconds = 900
+request.update_password    = true
+
+response = KeycloakAdmin.realm("a_realm").magic_links.create(request)
+response.link # => "https://auth.example.com/realms/a_realm/login-actions/action-token?key=..."
 ```
 
 ### Get list of realms
