@@ -26,7 +26,6 @@ module KeycloakAdmin
                   :authentication_flow_binding_overrides,
                   :full_scope_allowed,
                   :node_re_registration_timeout,
-                  :attributes,
                   :protocol_mappers,
                   :default_client_scopes,
                   :optional_client_scopes,
@@ -60,7 +59,6 @@ module KeycloakAdmin
       client.authentication_flow_binding_overrides = hash["authenticationFlowBindingOverrides"] || {}
       client.full_scope_allowed                    = hash["fullScopeAllowed"] || false
       client.node_re_registration_timeout          = hash["nodeReRegistrationTimeout"] || -1
-      client.attributes                            = hash["attributes"]
       client.protocol_mappers                      = (hash["protocolMappers"] || []).map { |protocol_mapper_hash| ProtocolMapperRepresentation.from_hash(protocol_mapper_hash) }
       client.default_client_scopes                 = hash["defaultClientScopes"] || []
       client.optional_client_scopes                = hash["optionalClientScopes"] || []
