@@ -81,27 +81,30 @@ When `--plan-only` is present in the invocation arguments:
 
 1. Run Phase 1 (Discovery & Planning) end-to-end against the skeleton or
    free-text feature request, exactly as you would in a normal invocation.
-2. Write the concrete plan produced by Phase 1 to a file inside the container
-   at `/tmp/$(basename "${ARGS_PLAN_PATH}" .md).concrete.md` (where
-   `ARGS_PLAN_PATH` is the in-container plan path passed as input). If the
-   input was free-text (no plan path), use `/tmp/plan.concrete.md`. The
-   concrete plan must be executable step by step: each of the 5 edits spelled
-   out (client class, representation, the two `require_relative` lines, the
-   `RealmClient` accessor), the paired spec files, the exact endpoint URLs and
-   payload shapes from the Keycloak Admin REST API reference, and the exact
+2. Write the concrete plan produced by Phase 1 to
+   `${NEW_AGENT_STAGE_DIR:-/tmp}/$(basename "${ARGS_PLAN_PATH}" .md).concrete.md`
+   (where `ARGS_PLAN_PATH` is the plan path passed as input and
+   `NEW_AGENT_STAGE_DIR` is the run's private stage dir that the coordinator's
+   `bin/new-agent.sh` exports). If the input was free-text (no plan path), use
+   `${NEW_AGENT_STAGE_DIR:-/tmp}/plan.concrete.md`. The concrete plan must be
+   executable step by step: each of the 5 edits spelled out (client class,
+   representation, the two `require_relative` lines, the `RealmClient`
+   accessor), the paired spec files, the exact endpoint URLs and payload
+   shapes from the Keycloak Admin REST API reference, and the exact
    quality-gate commands.
 3. Verify the file exists and is non-empty:
 
    ```bash
-   test -s /tmp/$(basename "${ARGS_PLAN_PATH}" .md).concrete.md
+   test -s ${NEW_AGENT_STAGE_DIR:-/tmp}/$(basename "${ARGS_PLAN_PATH}" .md).concrete.md
    ```
 
 4. **Stop after writing the concrete plan.** Do NOT proceed to Phase 2,
    Phase 3, or any implementation. Exit cleanly.
 
 The coordinator's `bin/new-agent.sh --concrete-plan-out <local-path>` copies
-`/tmp/<basename>.concrete.md` back to the coordinator workspace for human
-review under the `--review-concrete-plans` flow.
+`${NEW_AGENT_STAGE_DIR:-/tmp}/$(basename "${ARGS_PLAN_PATH}" .md).concrete.md`
+back to the coordinator workspace for human review under the
+`--review-concrete-plans` flow.
 
 When `--plan-only` is NOT present, continue normally through Phase 2 +
 Phase 3 + subsequent phases.
@@ -180,10 +183,12 @@ Phase 3 + subsequent phases.
    `keycloak-admin-patterns` rather than restating them here.
 
 5. **`--plan-only` short-circuit:** If `--plan-only` was passed, write the
-   concrete plan to `/tmp/$(basename "${ARGS_PLAN_PATH}" .md).concrete.md` (or
-   `/tmp/plan.concrete.md` for free-text input), verify it with
-   `test -s <path>`, and **exit cleanly** — do NOT proceed to Phase 2 or any
-   implementation. If `--plan-only` was NOT passed, continue to Phase 2.
+   concrete plan to
+   `${NEW_AGENT_STAGE_DIR:-/tmp}/$(basename "${ARGS_PLAN_PATH}" .md).concrete.md`
+   (or `${NEW_AGENT_STAGE_DIR:-/tmp}/plan.concrete.md` for free-text input),
+   verify it with `test -s <path>`, and **exit cleanly** — do NOT proceed to
+   Phase 2 or any implementation. If `--plan-only` was NOT passed, continue to
+   Phase 2.
 
 ## Phase 2: Implementation
 
