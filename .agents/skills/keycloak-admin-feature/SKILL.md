@@ -86,7 +86,11 @@ When `--plan-only` is present in the invocation arguments:
    (where `ARGS_PLAN_PATH` is the plan path passed as input and
    `NEW_AGENT_STAGE_DIR` is the run's private stage dir that the coordinator's
    `bin/new-agent.sh` exports). If the input was free-text (no plan path), use
-   `${NEW_AGENT_STAGE_DIR:-/tmp}/plan.concrete.md`. The concrete plan must be
+   `${NEW_AGENT_STAGE_DIR:-/tmp}/plan.concrete.md`.
+   Under `bin/new-agent.sh`, `NEW_AGENT_STAGE_DIR` is the directory that holds
+   the staged plan: resolve it first with `echo "${NEW_AGENT_STAGE_DIR:-/tmp}"`
+   and write to that literal directory, since a file-writing tool does not
+   expand shell variables. The concrete plan must be
    executable step by step: each of the 5 edits spelled out (client class,
    representation, the two `require_relative` lines, the `RealmClient`
    accessor), the paired spec files, the exact endpoint URLs and payload
@@ -95,10 +99,10 @@ When `--plan-only` is present in the invocation arguments:
 3. Verify the file you wrote is non-empty:
 
    ```bash
-   test -s ${NEW_AGENT_STAGE_DIR:-/tmp}/$(basename "${ARGS_PLAN_PATH}" .md).concrete.md
+   test -s "${NEW_AGENT_STAGE_DIR:-/tmp}/$(basename "${ARGS_PLAN_PATH}" .md).concrete.md"
    ```
 
-   (or `test -s ${NEW_AGENT_STAGE_DIR:-/tmp}/plan.concrete.md` for free-text
+   (or `test -s "${NEW_AGENT_STAGE_DIR:-/tmp}/plan.concrete.md"` for free-text
    input).
 
 4. **Stop after writing the concrete plan.** Do NOT proceed to Phase 2,
