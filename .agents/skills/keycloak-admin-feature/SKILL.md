@@ -12,7 +12,7 @@ description: Implement a keycloak-admin gem feature end-to-end (plan → impleme
   - `<path-to-skeleton-or-plan-file> [--plan-only]` (when invoked from `/cross-project-feature` with a copied plan path)
 - Required (one of):
   - free-text feature request/goal (everything before any flags)
-  - OR an in-container plan file path (e.g. `/tmp/2026-05-07-plan-04-foo.md`) when invoked from `/cross-project-feature`
+  - OR the staged plan path that `bin/new-agent.sh` passes (`$NEW_AGENT_STAGE_DIR/<basename>`, e.g. `$NEW_AGENT_STAGE_DIR/2026-05-07-plan-04-foo.md`) when invoked from `/cross-project-feature`
 - Optional flags:
   - `--instructions <path>` flag pointing to a file containing implementation instructions
   - `--plan-only` suffix that runs Phase 1 (Discovery & Planning) and exits without implementing — used by `/cross-project-feature --review-concrete-plans` to produce concrete plans for human review
@@ -81,27 +81,37 @@ When `--plan-only` is present in the invocation arguments:
 
 1. Run Phase 1 (Discovery & Planning) end-to-end against the skeleton or
    free-text feature request, exactly as you would in a normal invocation.
-2. Write the concrete plan produced by Phase 1 to a file inside the container
-   at `/tmp/$(basename "${ARGS_PLAN_PATH}" .md).concrete.md` (where
-   `ARGS_PLAN_PATH` is the in-container plan path passed as input). If the
-   input was free-text (no plan path), use `/tmp/plan.concrete.md`. The
-   concrete plan must be executable step by step: each of the 5 edits spelled
-   out (client class, representation, the two `require_relative` lines, the
-   `RealmClient` accessor), the paired spec files, the exact endpoint URLs and
-   payload shapes from the Keycloak Admin REST API reference, and the exact
+2. Write the concrete plan produced by Phase 1 to
+   `${NEW_AGENT_STAGE_DIR:-/tmp}/$(basename "${ARGS_PLAN_PATH}" .md).concrete.md`
+   (where `ARGS_PLAN_PATH` is the plan path passed as input and
+   `NEW_AGENT_STAGE_DIR` is the run's private stage dir that the coordinator's
+   `bin/new-agent.sh` exports). If the input was free-text (no plan path), use
+   `${NEW_AGENT_STAGE_DIR:-/tmp}/plan.concrete.md`.
+   Under `bin/new-agent.sh`, `NEW_AGENT_STAGE_DIR` is the directory that holds
+   the staged plan: resolve it first with `echo "${NEW_AGENT_STAGE_DIR:-/tmp}"`
+   and write to that literal directory, since a file-writing tool does not
+   expand shell variables. The concrete plan must be
+   executable step by step: each of the 5 edits spelled out (client class,
+   representation, the two `require_relative` lines, the `RealmClient`
+   accessor), the paired spec files, the exact endpoint URLs and payload
+   shapes from the Keycloak Admin REST API reference, and the exact
    quality-gate commands.
-3. Verify the file exists and is non-empty:
+3. Verify the file you wrote is non-empty:
 
    ```bash
-   test -s /tmp/$(basename "${ARGS_PLAN_PATH}" .md).concrete.md
+   test -s "${NEW_AGENT_STAGE_DIR:-/tmp}/$(basename "${ARGS_PLAN_PATH}" .md).concrete.md"
    ```
+
+   (or `test -s "${NEW_AGENT_STAGE_DIR:-/tmp}/plan.concrete.md"` for free-text
+   input).
 
 4. **Stop after writing the concrete plan.** Do NOT proceed to Phase 2,
    Phase 3, or any implementation. Exit cleanly.
 
 The coordinator's `bin/new-agent.sh --concrete-plan-out <local-path>` copies
-`/tmp/<basename>.concrete.md` back to the coordinator workspace for human
-review under the `--review-concrete-plans` flow.
+`${NEW_AGENT_STAGE_DIR:-/tmp}/$(basename "${ARGS_PLAN_PATH}" .md).concrete.md`
+back to the coordinator workspace for human review under the
+`--review-concrete-plans` flow.
 
 When `--plan-only` is NOT present, continue normally through Phase 2 +
 Phase 3 + subsequent phases.
@@ -111,8 +121,9 @@ Phase 3 + subsequent phases.
 0. **Detect input mode:**
    - If the input is free-text, run Phase 1 normally and produce an
      implementation plan.
-   - If the input points at a plan file (e.g. `/tmp/<basename>.md`), read the
-     file. Look for a `Plan-Generation Style:` line in the header.
+   - If the input points at a plan file (e.g. the staged plan path
+     `$NEW_AGENT_STAGE_DIR/<basename>` that `bin/new-agent.sh` passes), read
+     the file. Look for a `Plan-Generation Style:` line in the header.
      - If `Plan-Generation Style: skeleton-delegated` (or the file is short and
        lacks verbatim code blocks per task), run Phase 1 in skeleton-input mode
        per `## Inputs → Skeleton plan input mode (paradigm v2)`. Expand intent +
@@ -180,10 +191,12 @@ Phase 3 + subsequent phases.
    `keycloak-admin-patterns` rather than restating them here.
 
 5. **`--plan-only` short-circuit:** If `--plan-only` was passed, write the
-   concrete plan to `/tmp/$(basename "${ARGS_PLAN_PATH}" .md).concrete.md` (or
-   `/tmp/plan.concrete.md` for free-text input), verify it with
-   `test -s <path>`, and **exit cleanly** — do NOT proceed to Phase 2 or any
-   implementation. If `--plan-only` was NOT passed, continue to Phase 2.
+   concrete plan to
+   `${NEW_AGENT_STAGE_DIR:-/tmp}/$(basename "${ARGS_PLAN_PATH}" .md).concrete.md`
+   (or `${NEW_AGENT_STAGE_DIR:-/tmp}/plan.concrete.md` for free-text input),
+   verify it with `test -s <path>`, and **exit cleanly** — do NOT proceed to
+   Phase 2 or any implementation. If `--plan-only` was NOT passed, continue to
+   Phase 2.
 
 ## Phase 2: Implementation
 
