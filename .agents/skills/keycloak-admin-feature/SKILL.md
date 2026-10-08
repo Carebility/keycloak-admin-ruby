@@ -12,7 +12,7 @@ description: Implement a keycloak-admin gem feature end-to-end (plan → impleme
   - `<path-to-skeleton-or-plan-file> [--plan-only]` (when invoked from `/cross-project-feature` with a copied plan path)
 - Required (one of):
   - free-text feature request/goal (everything before any flags)
-  - OR an in-container plan file path (e.g. `/tmp/2026-05-07-plan-04-foo.md`) when invoked from `/cross-project-feature`
+  - OR the staged plan path that `bin/new-agent.sh` passes (`$NEW_AGENT_STAGE_DIR/<basename>`, e.g. `$NEW_AGENT_STAGE_DIR/2026-05-07-plan-04-foo.md`) when invoked from `/cross-project-feature`
 - Optional flags:
   - `--instructions <path>` flag pointing to a file containing implementation instructions
   - `--plan-only` suffix that runs Phase 1 (Discovery & Planning) and exits without implementing — used by `/cross-project-feature --review-concrete-plans` to produce concrete plans for human review
@@ -92,11 +92,14 @@ When `--plan-only` is present in the invocation arguments:
    accessor), the paired spec files, the exact endpoint URLs and payload
    shapes from the Keycloak Admin REST API reference, and the exact
    quality-gate commands.
-3. Verify the file exists and is non-empty:
+3. Verify the file you wrote is non-empty:
 
    ```bash
    test -s ${NEW_AGENT_STAGE_DIR:-/tmp}/$(basename "${ARGS_PLAN_PATH}" .md).concrete.md
    ```
+
+   (or `test -s ${NEW_AGENT_STAGE_DIR:-/tmp}/plan.concrete.md` for free-text
+   input).
 
 4. **Stop after writing the concrete plan.** Do NOT proceed to Phase 2,
    Phase 3, or any implementation. Exit cleanly.
@@ -114,8 +117,9 @@ Phase 3 + subsequent phases.
 0. **Detect input mode:**
    - If the input is free-text, run Phase 1 normally and produce an
      implementation plan.
-   - If the input points at a plan file (e.g. `/tmp/<basename>.md`), read the
-     file. Look for a `Plan-Generation Style:` line in the header.
+   - If the input points at a plan file (e.g. the staged plan path
+     `$NEW_AGENT_STAGE_DIR/<basename>` that `bin/new-agent.sh` passes), read
+     the file. Look for a `Plan-Generation Style:` line in the header.
      - If `Plan-Generation Style: skeleton-delegated` (or the file is short and
        lacks verbatim code blocks per task), run Phase 1 in skeleton-input mode
        per `## Inputs → Skeleton plan input mode (paradigm v2)`. Expand intent +
