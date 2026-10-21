@@ -113,7 +113,7 @@ All options have a default value. However, all of them can be changed in your in
 * Create/update/get/delete a user
 * Get list of users, search for user(s)
 * Reset credentials
-* Get a user's credentials
+* Get a user's credentials, delete one of a user's credentials
 * Impersonate a user
 * Exchange a configurable token
 * Get list of clients, or find a client by its id or client_id
@@ -240,6 +240,17 @@ Returns an array of `KeycloakAdmin::CredentialRepresentation` (`id`, `type`, `us
 user_id = "95985b21-d884-4bbd-b852-cb8cd365afc2"
 credentials = KeycloakAdmin.realm("a_realm").users.credentials(user_id)
 credentials.any? { |credential| credential.type == "password" }
+```
+
+### Delete a user's credential
+
+Removes one credential (for instance `otp`) from a user and returns `true`. Take the credential id from `credentials`. Any non-2xx response raises; a nil `user_id` or `credential_id` raises `ArgumentError`.
+
+```ruby
+user_id = "95985b21-d884-4bbd-b852-cb8cd365afc2"
+KeycloakAdmin.realm("a_realm").users.credentials(user_id).reject { |credential| credential.type == "password" }.each do |credential|
+  KeycloakAdmin.realm("a_realm").users.delete_credential(user_id, credential.id)
+end
 ```
 
 ### Get a user's federated identities

@@ -290,6 +290,26 @@ RSpec.describe KeycloakAdmin::UserClient do
     end
   end
 
+  describe "#credential_url" do
+    let(:realm_name) { "valid-realm" }
+
+    before(:each) do
+      @client = KeycloakAdmin.realm(realm_name).users
+    end
+
+    it "raises an error when user_id is not defined" do
+      expect { @client.credential_url(nil, "cred-1") }.to raise_error(ArgumentError, "user_id must be defined")
+    end
+
+    it "raises an error when credential_id is not defined" do
+      expect { @client.credential_url(42, nil) }.to raise_error(ArgumentError, "credential_id must be defined")
+    end
+
+    it "returns a proper url when both ids are defined" do
+      expect(@client.credential_url(42, "cred-1")).to eq "http://auth.service.io/auth/admin/realms/valid-realm/users/42/credentials/cred-1"
+    end
+  end
+
   describe "#delete" do
     let(:realm_name) { "valid-realm" }
 
@@ -420,6 +440,53 @@ RSpec.describe KeycloakAdmin::UserClient do
 
     it "raises argument error when user_id is nil" do
       expect { @user_client.credentials(nil) }.to raise_error(ArgumentError, "user_id must be defined")
+    end
+  end
+
+  describe "#delete_credential" do
+    let(:realm_name)    { "valid-realm" }
+    let(:user_id)       { "95985b21-d884-4bbd-b852-cb8cd365afc2" }
+    let(:credential_id) { "7a2c2d0f-3a4b-4e6c-9d8e-0f1a2b3c4d5e" }
+
+    before(:each) do
+      @user_client = KeycloakAdmin.realm(realm_name).users
+      stub_token_client
+      allow_any_instance_of(RestClient::Resource).to receive(:delete).and_return ""
+    end
+
+    it "deletes the credential at the credential url and returns true" do
+      expect(RestClient::Resource).to receive(:new).with(
+        "http://auth.service.io/auth/admin/realms/valid-realm/users/#{user_id}/credentials/#{credential_id}", anything).and_call_original
+
+      expect(@user_client.delete_credential(user_id, credential_id)).to eq true
+    end
+
+    it "passes rest client options" do
+      rest_client_options = {timeout: 10}
+      allow_any_instance_of(KeycloakAdmin::Configuration).to receive(:rest_client_options).and_return rest_client_options
+
+      expect(RestClient::Resource).to receive(:new).with(
+        "http://auth.service.io/auth/admin/realms/valid-realm/users/#{user_id}/credentials/#{credential_id}", rest_client_options).and_call_original
+
+      @user_client.delete_credential(user_id, credential_id)
+    end
+
+    it "raises the usual error when the response is not successful" do
+      response = double
+      allow(response).to receive(:code).and_return 404
+      allow(response).to receive(:body).and_return "Not found"
+      allow_any_instance_of(RestClient::Resource).to receive(:delete).and_raise(RestClient::ExceptionWithResponse.new(response))
+
+      expect { @user_client.delete_credential(user_id, credential_id) }.to raise_error(
+        "Keycloak: The request failed with response code 404 and message: Not found")
+    end
+
+    it "raises argument error when user_id is nil" do
+      expect { @user_client.delete_credential(nil, credential_id) }.to raise_error(ArgumentError, "user_id must be defined")
+    end
+
+    it "raises argument error when credential_id is nil" do
+      expect { @user_client.delete_credential(user_id, nil) }.to raise_error(ArgumentError, "credential_id must be defined")
     end
   end
 
