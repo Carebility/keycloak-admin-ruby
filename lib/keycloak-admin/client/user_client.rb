@@ -154,6 +154,13 @@ module KeycloakAdmin
       JSON.parse(response).map { |credential_as_hash| CredentialRepresentation.from_hash(credential_as_hash) }
     end
 
+    def delete_credential(user_id, credential_id)
+      execute_http do
+        RestClient::Resource.new(credential_url(user_id, credential_id), @configuration.rest_client_options).delete(headers)
+      end
+      true
+    end
+
     def federated_identities(user_id)
       response = execute_http do
         RestClient::Resource.new(federated_identities_url(user_id), @configuration.rest_client_options).get(headers)
@@ -298,6 +305,11 @@ module KeycloakAdmin
     def credentials_url(user_id)
       raise ArgumentError.new("user_id must be defined") if user_id.nil?
       "#{users_url(user_id)}/credentials"
+    end
+
+    def credential_url(user_id, credential_id)
+      raise ArgumentError.new("credential_id must be defined") if credential_id.nil?
+      "#{credentials_url(user_id)}/#{credential_id}"
     end
 
     def federated_identities_url(user_id)
