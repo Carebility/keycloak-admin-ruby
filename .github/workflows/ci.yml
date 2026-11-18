@@ -26,6 +26,7 @@ jobs:
           - 8080:8080
         options: '--health-cmd "exec 3<>/dev/tcp/localhost/8080" --health-interval 5s --health-timeout 5s --health-retries 10 --health-start-period 100s'
         env:
+          JAVA_OPTS_APPEND: "-XX:-UseBASE64Intrinsics"
           KEYCLOAK_ADMIN: "admin"
           KEYCLOAK_ADMIN_PASSWORD: "admin"
           KC_HOSTNAME: "http://localhost:8080"
